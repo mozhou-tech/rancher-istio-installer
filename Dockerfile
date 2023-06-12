@@ -1,7 +1,7 @@
-FROM registry.suse.com/suse/sle15:15.3
+FROM ubuntu:20.04
 ENV ISTIO_VERSION 1.17.2
-RUN zypper -n update && \
-    zypper -n install curl jq openssl nginx tar gzip sudo
+RUN apt-get update && \
+    apt-get install -y curl jq openssl nginx tar gzip sudo
 
 # Get Istio
 RUN curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${ISTIO_VERSION} sh -
@@ -23,7 +23,9 @@ COPY overlay/ .
 RUN mkdir -p /opt/istio-releases && /usr/local/app/scripts/fetch_istio_releases.sh /opt/istio-releases
 RUN mkdir -p /var/cache/nginx
 
-RUN chown -R nginx:nginx /var/cache/nginx /etc/ssl /var/run /usr/share/nginx /usr/lib/ca-certificates /var/lib/ca-certificates /usr/local/app/dashboards
+RUN sudo groupadd nginx && sudo useradd -g nginx -s /bin/false -M nginx
+
+RUN chown -R nginx:nginx /var/cache/nginx /etc/ssl /var/run /usr/share/nginx /usr/share/ca-certificates /usr/local/share/ca-certificates /usr/local/app/dashboards
 RUN chmod 755 /etc/ssl/private /etc/ssl/certs
 
 RUN echo "nginx ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/nginx \
